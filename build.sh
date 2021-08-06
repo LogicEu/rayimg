@@ -60,6 +60,7 @@ comp() {
 clean() {
     rm -r lib/
     rm $name
+    rm *.png
 }
 
 if [[ $# < 1 ]]; then

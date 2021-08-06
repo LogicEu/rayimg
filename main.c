@@ -10,7 +10,6 @@
 
 #define CLMPF(x) clampf(0.0f, 1.0f, x)
 #define minf(a, b) (float)(a * (a <= b) + b * (b < a))
-#define px_at(bmp, x, y) (bmp.pixels + (bmp.width * y + x) * bmp.channels)
 
 float scene_dist(vec3 position)
 {
@@ -60,6 +59,28 @@ float get_light(vec3 pos)
     return dif;
 }
 
+#define px_at(bmp, x, y) (uint8_t*)((bmp->pixels) + (((bmp->width) * (y)) + (x)) * (bmp->channels))
+#define px_aat(bmp, x, y) (uint8_t*)((bmp.pixels) + (((bmp.width) * (y)) + (x)) * (bmp.channels))
+
+bmp_t _bmp_flip_vertical(bmp_t* bmp)
+{
+    bmp_t new_bmp = bmp_new(bmp->width, bmp->height, bmp->channels);
+    for (unsigned int y = 0; y < new_bmp.height; y++) {
+        for (unsigned int x = 0; x < new_bmp.width; x++) {
+            /*memcpy(new_bmp.pixels + (new_bmp.width * y + x) * new_bmp.channels,
+                bmp->pixels + (bmp->width * (bmp->height - 1 - y) + x) * bmp->channels,
+                new_bmp.channels
+            );*/
+
+            memcpy(px_aat(new_bmp, x, y), 
+                px_at(bmp, x, bmp->height - y - 1), 
+                new_bmp.channels
+            );
+        }
+    }
+    return new_bmp;
+}
+
 int main(void)
 {
     int width = 800, height = 600, channels = 4;
@@ -80,13 +101,13 @@ int main(void)
 
             vec4 color = {CLMPF(0.1f + dif), CLMPF(0.1f + dif), CLMPF(0.1f + dif), 1.0f};
             uint8_t px[4] = {(uint8_t)(color.x * 255.0f), (uint8_t)(color.y * 255.0f), (float)(color.z * 255.0f), (float)(color.w * 255.0f)};
-            memcpy(px_at(bmp, x, y), &px[0], bmp.channels);
+            memcpy(px_aat(bmp, x, y), &px[0], bmp.channels);
         }
     }
 
     char* path = "output.png";
     char op[256];
-    bmp_t img = bmp_flip_vertical(&bmp);
+    bmp_t img = _bmp_flip_vertical(&bmp);
     bmp_write(path, &img);
     bmp_free(&bmp);
     bmp_free(&img);
