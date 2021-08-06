@@ -17,11 +17,11 @@ inc=(
 
 lib=(
     -Llib/
+    -limgtool
+    -lfract
     -lz
     -lpng
     -ljpeg
-    -limgtool
-    -lfract
 )
 
 mac_os=(
@@ -48,9 +48,9 @@ build() {
 
 comp() {
     if echo "$OSTYPE" | grep -q "darwin"; then
-        $comp ${flags[*]} ${mac_os[*]} ${inc[*]} ${lib[*]} $src -o $name
+        $comp $src -o $name ${flags[*]} ${mac_os[*]} ${inc[*]} ${lib[*]}
     elif echo "$OSTYPE" | grep -q "linux"; then
-        $comp ${flags[*]} ${inc[*]} ${lib[*]} -lm $src -o $name
+        $comp $src -o $name ${flags[*]} ${inc[*]} ${lib[*]} -lm
     else
         echo "OS not supported yet"
         exit
