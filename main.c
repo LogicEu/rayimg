@@ -8,16 +8,15 @@
 #define MAX_RAY_DIST 100
 #define SURFACE_DIST 0.1f
 
-#define CLMPF(x) clampf(0.0f, 1.0f, x)
+#define px_at(bmp, x, y) (bmp.pixels + ((bmp.width * (y)) + (x)) * bmp.channels)
+#define clmpf(x) (float)((x) * ((x) > 0.0 && (x) < 1.0) + ((x) >= 1.0))
 #define minf(a, b) (float)(a * (a <= b) + b * (b < a))
 
 float scene_dist(vec3 position)
 {
-    // Sphere -> .xyz = pos / .w = radius
-    vec4 s = {0.0f, 2.0f, 5.0f, 1.0f};
-
-    // Distance from the center of sphere to position 
-    float sphereDist = vec3_mag(vec3_sub(position, vec3_new(s.x, s.y, s.z))) - s.w;
+    float sphereRadius = 1.0f;
+    vec3 sphereCenter = {0.0f, 2.0f, 5.0f};
+    float sphereDist = vec3_mag(vec3_sub(position, sphereCenter)) - sphereRadius;
     float planeDist = position.y;
     float dist = minf(sphereDist, planeDist);
     return dist;
@@ -59,28 +58,6 @@ float get_light(vec3 pos)
     return dif;
 }
 
-#define px_at(bmp, x, y) (uint8_t*)((bmp->pixels) + (((bmp->width) * (y)) + (x)) * (bmp->channels))
-#define px_aat(bmp, x, y) (uint8_t*)((bmp.pixels) + (((bmp.width) * (y)) + (x)) * (bmp.channels))
-
-bmp_t _bmp_flip_vertical(bmp_t* bmp)
-{
-    bmp_t new_bmp = bmp_new(bmp->width, bmp->height, bmp->channels);
-    for (unsigned int y = 0; y < new_bmp.height; y++) {
-        for (unsigned int x = 0; x < new_bmp.width; x++) {
-            /*memcpy(new_bmp.pixels + (new_bmp.width * y + x) * new_bmp.channels,
-                bmp->pixels + (bmp->width * (bmp->height - 1 - y) + x) * bmp->channels,
-                new_bmp.channels
-            );*/
-
-            memcpy(px_aat(new_bmp, x, y), 
-                px_at(bmp, x, bmp->height - y - 1), 
-                new_bmp.channels
-            );
-        }
-    }
-    return new_bmp;
-}
-
 int main(void)
 {
     int width = 800, height = 600, channels = 4;
@@ -99,15 +76,15 @@ int main(void)
             vec3 pos = vec3_add(origin, vec3_mult(dir, d));
             float dif = get_light(pos); 
 
-            vec4 color = {CLMPF(0.1f + dif), CLMPF(0.1f + dif), CLMPF(0.1f + dif), 1.0f};
-            uint8_t px[4] = {(uint8_t)(color.x * 255.0f), (uint8_t)(color.y * 255.0f), (float)(color.z * 255.0f), (float)(color.w * 255.0f)};
-            memcpy(px_aat(bmp, x, y), &px[0], bmp.channels);
+            vec4 color = {clmpf(0.1f + dif), clmpf(0.1f + dif), clmpf(0.1f + dif), 1.0f};
+            uint8_t px[4] = {(uint8_t)(color.x * 255.0f), (uint8_t)(color.y * 255.0f), (uint8_t)(color.z * 255.0f), (uint8_t)(color.w * 255.0f)};
+            memcpy(px_at(bmp, x, y), &px[0], bmp.channels);
         }
     }
 
     char* path = "output.png";
     char op[256];
-    bmp_t img = _bmp_flip_vertical(&bmp);
+    bmp_t img = bmp_flip_vertical(&bmp);
     bmp_write(path, &img);
     bmp_free(&bmp);
     bmp_free(&img);
