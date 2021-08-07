@@ -60,7 +60,7 @@ comp() {
 clean() {
     rm -r lib/
     rm $name
-    rm *.png
+    rm *.gif
 }
 
 if [[ $# < 1 ]]; then
@@ -75,7 +75,8 @@ elif [[ "$1" == "-comp" ]]; then
 elif [[ "$1" == "-run" ]]; then
     build
     comp
-    ./$name
+    shift
+    ./$name "$@"
     exit
 elif [[ "$1" == "-clean" ]]; then
     clean
