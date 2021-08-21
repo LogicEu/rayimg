@@ -1,8 +1,7 @@
-[submodule "libfract"]
-	path = libfract
-	url = git@github.com:LogicEu/libfract.git
-	branch = main
 [submodule "imgtool"]
 	path = imgtool
 	url = git@github.com:LogicEu/imgtool.git
 	branch = main
+[submodule "fract"]
+	path = fract
+	url = git@github.com:LogicEu/fract.git

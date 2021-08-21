@@ -1,7 +1,7 @@
 #!/bin/bash
 
 name=rayimg
-comp=gcc
+cc=gcc
 src=*.c
 
 flags=(
@@ -33,54 +33,39 @@ fail() {
     exit
 }
 
-build() {
-    pushd libfract/
-    ./build.sh -s
-    popd
-    pushd imgtool/
-    ./build.sh -slib
-    popd
+build_lib() {
+    pushd $1/ && ./build.sh $2 && mv *.a ../lib/ && popd
+}
 
+build() {
     mkdir lib/
-    mv libfract/libfract.a lib/libfract.a
-    mv imgtool/libimgtool.a lib/libimgtool.a
+    build_lib fract -s
+    build_lib imgtool -slib
 }
 
 comp() {
     if echo "$OSTYPE" | grep -q "darwin"; then
-        $comp $src -o $name ${flags[*]} ${mac_os[*]} ${inc[*]} ${lib[*]}
+        $cc $src -o $name ${flags[*]} ${mac_os[*]} ${inc[*]} ${lib[*]}
     elif echo "$OSTYPE" | grep -q "linux"; then
-        $comp $src -o $name ${flags[*]} ${inc[*]} ${lib[*]} -lm
+        $cc $src -o $name ${flags[*]} ${inc[*]} ${lib[*]} -lm
     else
-        echo "OS not supported yet"
-        exit
+        echo "OS not supported yet" && exit
     fi
 }
 
 clean() {
-    rm -r lib/
-    rm $name
-    rm *.gif
+    rm -r lib/ && rm $name
 }
 
-if [[ $# < 1 ]]; then
-    fail
-elif [[ "$1" == "-build" ]]; then
-    build
-    exit
-elif [[ "$1" == "-comp" ]]; then
-    build
-    comp
-    exit
-elif [[ "$1" == "-run" ]]; then
-    build
-    comp
-    shift
-    ./$name "$@"
-    exit
-elif [[ "$1" == "-clean" ]]; then
-    clean
-    exit
-else 
-    fail
-fi
+case "$1" in
+    "-build")
+        build;;
+    "-comp")
+        build && comp;;
+    "-run")
+        build && comp && ./$name "$@";;
+    "-clean")
+        clean;;
+    *)
+        fail;;
+esac
