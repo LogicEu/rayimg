@@ -1,5 +1,5 @@
 #include <imgtool.h>
-#include <libfract.h>
+#include <fract.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
