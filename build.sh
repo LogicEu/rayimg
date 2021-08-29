@@ -12,7 +12,8 @@ flags=(
 )
 
 inc=(
-    -Iinclude/
+    -Ifract/
+    -Iimgtool/
 )
 
 lib=(

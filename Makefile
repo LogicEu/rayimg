@@ -3,16 +3,15 @@
 STD=-std=c99
 WFLAGS=-Wall
 OPT=-O2
-IDIR=-I. -Iinclude
 LIBS=fract imgtool
 CC=gcc
 NAME=rayimg
 SRC=*.c
 
-CFLAGS=$(STD) $(WFLAGS) $(OPT) $(IDIR)
 OS=$(shell uname -s)
 
 LDIR=lib
+IDIR=$(patsubst %,-I%/,$(LIBS))
 LSTATIC=$(patsubst %,lib%.a,$(LIBS))
 LPATHS=$(patsubst %,$(LDIR)/%,$(LSTATIC))
 LFLAGS=$(patsubst %,-L%,$(LDIR))
@@ -24,6 +23,8 @@ ifeq ($(OS),Darwin)
 else 
 	OSFLAGS=-lm
 endif
+
+CFLAGS=$(STD) $(WFLAGS) $(OPT) $(IDIR)
 
 $(NAME): $(LPATHS) $(SRC)
 	$(CC) -o $@ $(SRC) $(CFLAGS) $(LFLAGS) $(OSFLAGS)
@@ -40,5 +41,5 @@ $(LDIR)%.a: %
 clean:
 	rm -r $(LDIR) && rm $(NAME)
 	
-install: $(NAME)
-	sudo cp $^ /usr/local/bin/
+exe: 
+	$(CC) -o $(NAME) $(SRC) $(CFLAGS) $(LFLAGS) $(OSFLAGS)
